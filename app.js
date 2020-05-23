@@ -22,23 +22,24 @@ app.use(bodyParser.urlencoded({extended: true}));
 var connection = mysql.createConnection({
   host     : 'localhost',
   user     : 'root',
-  password: '',
+  password: 'yogurt59?!A',
   database : 'practice'
 });
 
 
 //store express session to maintain user's info
 app.use(session({
-  secret : 'MYSECRETISVERYSECRET', //key value for sesssion
+  secret : 'MYSECRETSECRET', //key value for sesssion
   resave : false,
   saveUninitialized : true,
-  stroe : new MySQLStore({
-    host: 'localhost',
-    port: 3000,
-    user: 'root',
-    password: '',
-    database: 'practice'
-  })
+  // store : new MySQLStore({
+  //   host: 'localhost',
+  //   port: 3000,
+  //   user: 'root',
+  //   password: 'yogurt59?!A',
+  //   database: 'practice'
+  // })
+  cookie:{secure: false}
 }));
 
 //passpot module initialization
@@ -105,21 +106,25 @@ passport.use(new LocalStrategy({
    usernameField: 'id',
    passwordField: 'password',
    passReqToCallback: true //passback entire req to call back
-} , function (req, username, password, done){
+} , function (req,username, password, done){
     if(!username || !password ) {
-      return done(null, false, req.flash('message','All fields are required.'));
+      //return done(null, false, {message:'All fields are required.'});
+      return done('All fields are required');
     }
+    //console.log('check: ' + username + ' ' + password);
     var q = "select * from user where id = ?"
     connection.query(q, [username], async(err, res)=>{
         console.log(err);
         console.log(res);
-      if (err) return done(req.flash('message',err));
-      if(!res.length){ return done(null, false, req.flash('message','Invalid id or password.')); }
+      if (err) return done(err);
+      if(!res.length){ return done(null, false, {message:'Invalid id or password.'}); }
       var user = res[0];
-      //console.log(user_password, hashedPassword);
+      //console.log('result: '  + user);
+      //console.log(user.password, password);
       if(user.password != password){
-          return done(null, false, req.flash('message','Invalid id or password.'));
+          return done(null, false,{message:'Invalid id or password.'});
        }
+       console.log('what return: ' + user);
       return done(null, user);
     });
   }
@@ -133,16 +138,20 @@ app.post("/login", passport.authenticate('local', {
 })
 );
 
-//
+// when login is successful
 passport.serializeUser(function(user, done){
+  //console.log('serial: '+ user.id);
     done(null, user.id);
 });
 
 passport.deserializeUser(function(id, done){
-    connection.query("select * from user where id = "+ id, function (err, results){
-        done(err, results[0]);
+    connection.query("select * from user where 'id' = ?" , [id], function (err, user){
+      //console.log('deserial: '+ user);
+        done(err, user);
     });
 });
+
+
 
 
 //logout function in passport
@@ -152,7 +161,7 @@ app.get('/logout', function(req, res){
     res.redirect('/login');
 });
 
-// catch 404 and forward to error handler
+//catch 404 and forward to error handler
 app.use(function(req, res, next) {
   var err = new Error('Not Found');
   err.status = 404;
