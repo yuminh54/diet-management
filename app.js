@@ -22,7 +22,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 var connection = mysql.createConnection({
   host     : 'localhost',
   user     : 'root',
-  password: 'yogurt59?!A',
+  password: '',
   database : 'practice'
 });
 
@@ -36,7 +36,7 @@ app.use(session({
   //   host: 'localhost',
   //   port: 3000,
   //   user: 'root',
-  //   password: 'yogurt59?!A',
+  //   password: '',
   //   database: 'practice'
   // })
   cookie:{secure: false}
