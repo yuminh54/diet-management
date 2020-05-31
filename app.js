@@ -7,7 +7,7 @@ var MySQLStore = require('express-mysql-session')(session);
 var flash = require('connect-flash');
 
 var app = express();
-
+app.use(express.static(__dirname+'/public'));
 // var index = require('./routes/index');
 // var users = require('./routes/users');
 
@@ -92,6 +92,7 @@ app.post("/register", async(req, res)=>{
     var q = 'insert into user set ?'
     connection.query(q, user, function (error, results) {
     if (error) throw error;
+    console.log("Data inserted!");
     });
   }catch{
     res.redirect('/');
@@ -124,8 +125,8 @@ passport.use(new LocalStrategy({
       if(user.password != password){
           return done(null, false,{message:'Invalid id or password.'});
        }
-       console.log('what return: ' + user);
-      return done(null, user);
+       //console.log('what return: ' + user);
+      return done(null, {'id':username});
     });
   }
 ));
@@ -138,17 +139,57 @@ app.post("/login", passport.authenticate('local', {
 })
 );
 
+//passport auth check//
+var isAuthenticated = function(req, res, next){
+  if(req.isAuthenticated())
+    return next();
+  res.redirect('/login');
+}
+
+//diary. Can use this, when user is logged in.
+
+app.get("/diary", isAuthenticated, function(req, res){
+  var q = "select DATE_FORMAT(date, \'%y-%m-%d\') as d, comment from diary where user_id = ?"
+  connection.query(q, [req.user.id], function(err, rows){
+      console.log(err);
+      console.log(rows);
+      res.render('diary', {user:req.user.id, rows: rows})
+  });
+
+  //console.log(req.user.id);
+});
+
+
+app.post("/diary", isAuthenticated,function(req, res){
+  //console.log(req.user.id);
+  //res.render('diary', {user:req.user.id);
+  var diary = {
+    user_id: req.user.id,
+    comment: req.body.comment
+  };
+  var q = 'insert into diary set ?'
+  connection.query(q, diary, function (error, results) {
+  if (error) throw error;
+  console.log("Data inserted!");
+  res.redirect('/diary');
+  });
+});
+
+
+
 // when login is successful
 passport.serializeUser(function(user, done){
   //console.log('serial: '+ user.id);
-    done(null, user.id);
+    //session store
+    done(null, user);
 });
 
-passport.deserializeUser(function(id, done){
-    connection.query("select * from user where 'id' = ?" , [id], function (err, user){
-      //console.log('deserial: '+ user);
-        done(err, user);
-    });
+passport.deserializeUser(function(user, done){
+    // connection.query("select * from user where 'id' = ?" , [id], function (err, user){
+    //   //console.log('deserial: '+ user);
+    //     done(err, user);
+    // });
+    done(null, user);
 });
 
 
