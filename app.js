@@ -1,9 +1,9 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
-const mysql      = require('sync-mysql');
+const sync_mysql      = require('sync-mysql');
 
-const connection = new mysql({
+const sync_connection = new sync_mysql({
   host     : '52.79.44.154',
   user     : 'user',
   password : '1234',
@@ -30,21 +30,21 @@ app.post('/add_eaten_food', (req, res) => {
     //유효성 검사 about user, food
 
     //nutrients 종류 저장
-    rows = connection.query("SELECT details from nutrient");
+    rows = sync_connection.query("SELECT details from nutrient");
     for(var i = 0; rows[i]; i++) {
         nutrients[i] = rows[i].details;   
     }
 
     //선택한 food에 대한 영양소 저장
     query = 'SELECT * FROM food_nutrient where food_name_fn="' + food + '"';
-    rows = connection.query(query);
+    rows = sync_connection.query(query);
     for(var i = 0; rows[i]; i++){
         eaten_nutrients[rows[i].food_nutrient_details] = rows[i].amount;
     }
 
     //이전까지 먹은 영양소와 합치기
     query = 'SELECT * FROM eaten_nutrient where user_id = "' + userid + '" and date = "' + date + '"';
-    rows = connection.query(query);
+    rows = sync_connection.query(query);
 
     if(rows.length != 0) {
         const query_header = 'UPDATE eaten_nutrient SET eaten_amount = eaten_amount+';
@@ -55,7 +55,7 @@ app.post('/add_eaten_food', (req, res) => {
             if(!amount) amount = 0.0;
             query = query_header + amount + ' WHERE eaten_nutrient_details = "' + nutrients[i] + '" ' + query_footer;
             //update구문
-            connection.query(query);
+            sync_connection.query(query);
         }
 
     }
@@ -66,19 +66,19 @@ app.post('/add_eaten_food', (req, res) => {
             if(!amount) amount = 0.0;
             query = query_header + nutrients[i] + '", ' + amount + ')';
             //insert구문
-            connection.query(query);
+            sync_connection.query(query);
         }
     }
 
     query = 'INSERT INTO eaten_food(user_id, date, food_name_ef) VALUES("' + userid + '", "' + date + '", "' + food + '")';
-    connection.query(query);
+    sync_connection.query(query);
     res.render('add_success', {userid: userid, food: food, date:date});
 });
 
 
 app.get('/add_eaten_food', (req, res) => {
     var foods = [];
-    var rows = connection.query('select name from food');
+    var rows = sync_connection.query('select name from food');
     var i = 0;
     while(rows[i]) {
         foods[i] = rows[i].name;
