@@ -1,8 +1,8 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
-
 const mysql      = require('sync-mysql');
+
 const connection = new mysql({
   host     : '52.79.44.154',
   user     : 'user',
@@ -16,24 +16,7 @@ app.set('views', './views');
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({extended: false}));
 
-app.get('/login', (req, res) => {
-    res.render('login');
-});
-
-
 //TODO: sementic query로 받은 id를 session으로 받아야 함.
-app.get('/home', (req, res) => {
-    var datas;
-    connection.query('select id from user', function (error, rows) {
-        if (error) {
-            console.log(error);
-            return;
-        }
-        res.send(rows);
-    });
-    
-});
-
 app.post('/add_eaten_food', (req, res) => {
     var date = req.body.date;
     var food = req.body.food;
@@ -104,14 +87,6 @@ app.get('/add_eaten_food', (req, res) => {
     res.render('add_eaten_food', {food_names:foods});
     
 });
-
-app.get('/dice', (req, res) => {
-    res.send("Hello, dice <img src='/dice.jpg'>");
-});
-
-
-
-
 
 app.listen(3000, ()=>{
     console.log("Connected 3000 port!");
