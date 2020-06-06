@@ -1,2 +1,4 @@
 node_modules/
 routes/
+app_session_mysql.js
+package-lock.json
