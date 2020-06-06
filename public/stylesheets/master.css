@@ -6,7 +6,8 @@ body{
   font-family:arial,sans-serif;
   font-size:100%;
   margin:3em;
-  background:#666;
+  /* background:#666; */
+  background: #34495e;
   color:#fff;
 }
 h2,p{

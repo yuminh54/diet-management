@@ -20,10 +20,10 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 
 var connection = mysql.createConnection({
-  host     : 'localhost',
-  user     : 'root',
-  password: '',
-  database : 'practice'
+  host     : '52.79.44.154',
+  user     : 'user',
+  password: '1234',
+  database : 'nutrient_app'
 });
 
 
@@ -175,6 +175,32 @@ app.post("/diary", isAuthenticated,function(req, res){
   });
 });
 
+app.get("/weight", isAuthenticated, function(req, res){
+  var q = "select DATE_FORMAT(date, \'%y-%m-%d\') as d, weight from weigth_diary where user_id = ?"
+  connection.query(q, [req.user.id], function(err, rows){
+      console.log(err);
+      console.log(rows);
+      res.render('weight', {user:req.user.id, rows: rows})
+  });
+
+  //console.log(req.user.id);
+});
+
+
+app.post("/weight", isAuthenticated,function(req, res){
+  //console.log(req.user.id);
+  //res.render('diary', {user:req.user.id);
+  var weigth_diary = {
+    user_id: req.user.id,
+    weight: req.body.weight
+  };
+  var q = 'insert into weigth_diary set ?'
+  connection.query(q, weigth_diary, function (error, results) {
+  if (error) throw error;
+  console.log("Data inserted!");
+  res.redirect('/weight');
+  });
+});
 
 
 // when login is successful
@@ -203,15 +229,15 @@ app.get('/logout', function(req, res){
 });
 
 //catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
-});
+// app.use(function(req, res, next) {
+//   var err = new Error('Not Found');
+//   err.status = 404;
+//   next(err);
+// });
 
 
 //module.exports = app;
 
-app.listen(3000, function () {
- console.log('App listening on port 3000!');
+app.listen(10003, function () {
+ console.log('App listening on port 10003!');
 });
